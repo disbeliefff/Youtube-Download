@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch web",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "REDIS_ADDR": "redis://localhost:6379",
+                "PORT": "8080",
+                "DEV": "1"
+            },
+            "showLog": true
+        }
+    ]
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+    />
+    <title>YouTube Downloader</title>
+    <style>
+      body {
+        background-color: #f0f0f0;
+        font-family: "Roboto", sans-serif;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: auto;
+        margin-top: 5rem;
+      }
+      .form-control-lg {
+        border-radius: 0.3rem;
+        border: 1px solid #ced4da;
+        box-shadow: none;
+      }
+      .btn-primary {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+        color: #ffffff;
+      }
+      .btn-primary:hover {
+        background-color: #333333;
+        border-color: #333333;
+      }
+      .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+        width: 100%;
+      }
+      .modal-content {
+        border-radius: 0;
+        border: 1px solid #ced4da;
+        height: 100vh;
+        margin: 0;
+        width: 100%;
+      }
+      .modal-header {
+        background-color: #f7f7f7;
+        border-bottom: 1px solid #ced4da;
+        color: #333333;
+      }
+      .modal-footer {
+        border-top: 1px solid #ced4da;
+      }
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+      }
+      .form-group label {
+        font-weight: 500;
+      }
+      .btn-block {
+        display: block;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="mb-4 text-center">YouTube Downloader</h1>
+      <form id="downloadForm" method="POST" action="/download">
+        <div class="form-group">
+          <label for="url">Video URL</label>
+          <input
+            type="url"
+            class="form-control form-control-lg"
+            id="url"
+            name="url"
+            placeholder="Enter video URL"
+            required
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-lg btn-block"
+          data-toggle="modal"
+          data-target="#formatModal"
+        >
+          Select Format
+        </button>
+      </form>
+
+      <!-- Format Selection Modal -->
+      <div
+        class="modal fade"
+        id="formatModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="formatModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="formatModalLabel">Select Format</h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="format">Format</label>
+                <select class="form-control" id="format" name="format" required>
+                  <option value="144">144p</option>
+                  <option value="240">240p</option>
+                  <option value="360">360p</option>
+                  <option value="480">480p</option>
+                  <option value="720">720p</option>
+                  <option value="1080">1080p</option>
+                  <option value="audio">Audio Only</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{if .error}}
+      <div class="alert alert-danger mt-3">{{.error}}</div>
+      {{end}} {{if .message}}
+      <div class="alert alert-success mt-3">{{.message}}</div>
+      {{end}}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
