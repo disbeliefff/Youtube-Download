@@ -78,6 +78,22 @@
         display: block;
         width: 100%;
       }
+      #progressBar {
+        width: 100%;
+        height: 30px;
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+        overflow: hidden;
+        margin-top: 1rem;
+      }
+      #progressBar span {
+        display: block;
+        height: 100%;
+        background-color: #007bff;
+        text-align: center;
+        line-height: 30px;
+        color: #ffffff;
+      }
     </style>
   </head>
   <body>
@@ -149,21 +165,69 @@
               >
                 Close
               </button>
-              <button type="submit" class="btn btn-primary">Download</button>
+              <button id="submitDownload" type="button" class="btn btn-primary">
+                Download
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {{if .error}}
-      <div class="alert alert-danger mt-3">{{.error}}</div>
-      {{end}} {{if .message}}
-      <div class="alert alert-success mt-3">{{.message}}</div>
-      {{end}}
+      <!-- Progress Bar -->
+      <div id="progressBar" class="d-none">
+        <span id="progressText">Not started</span>
+      </div>
+
+      <!-- Alerts -->
+      <div id="alertContainer"></div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#submitDownload").click(function () {
+          var url = $("#url").val();
+          var format = $("#format").val();
+
+          $.post("/download", { url: url, format: format }, function (data) {
+            if (data.error) {
+              showAlert("danger", data.error);
+            } else {
+              $("#progressBar").removeClass("d-none");
+              checkProgress(url);
+            }
+          }).fail(function () {
+            showAlert("danger", "Failed to start download.");
+          });
+        });
+      });
+
+      function checkProgress(url) {
+        $.get("/progress", { url: url }, function (data) {
+          $("#progressText").text(data);
+
+          if (data === "Completed") {
+            showAlert("success", "Download completed!");
+            $("#progressBar").addClass("d-none");
+          } else if (data === "Failed") {
+            showAlert("danger", "Download failed.");
+            $("#progressBar").addClass("d-none");
+          } else {
+            setTimeout(function () {
+              checkProgress(url);
+            }, 2000); // Check progress every 2 seconds
+          }
+        }).fail(function () {
+          showAlert("danger", "Failed to get progress.");
+        });
+      }
+
+      function showAlert(type, message) {
+        var alertHtml = `<div class="alert alert-${type} mt-3">${message}</div>`;
+        $("#alertContainer").html(alertHtml);
+      }
+    </script>
   </body>
 </html>

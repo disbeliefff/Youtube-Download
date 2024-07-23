@@ -9,14 +9,22 @@ import (
 	"syscall"
 	"youtubedownload/handlers"
 	"youtubedownload/tasks"
+	"youtubedownload/worker"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
+var (
+	rdb    *redis.Client
+	logger *zap.Logger
+)
+
 func main() {
-	logger, err := zap.NewDevelopment()
+	var err error
+	logger, err = zap.NewDevelopment()
 	if err != nil {
 		panic(fmt.Sprintf("Cannot start logger, error is %s", err))
 	}
@@ -43,6 +51,12 @@ func main() {
 		redisAddr = redisURL
 	}
 
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     redisAddr,
+		Password: redisPassword,
+		DB:       0,
+	})
+
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{
 		Addr:     redisAddr,
 		Password: redisPassword,
@@ -52,6 +66,7 @@ func main() {
 	router := gin.Default()
 	router.Use(gin.Recovery())
 	router.Use(func(c *gin.Context) {
+		c.Set("asynqClient", asynqClient)
 		c.Next()
 		logger.Info("Request",
 			zap.String("method", c.Request.Method),
@@ -64,7 +79,8 @@ func main() {
 	router.Static("/static", "./static")
 
 	router.GET("/", handlers.ShowIndexPage)
-	router.POST("/download", handlers.DownloadVideo(asynqClient))
+	router.POST("/download", handlers.DownloadHandler)
+	router.GET("/progress", handlers.GetDownloadProgress)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -82,7 +98,7 @@ func main() {
 	)
 
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(tasks.TypeYouTubeDownload, tasks.HandleYoutubeDownload)
+	mux.HandleFunc(tasks.TypeYouTubeDownload, worker.HandleYouTubeDownloadTask)
 
 	go func() {
 		if err := srv.Run(mux); err != nil {
